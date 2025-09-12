@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import L from 'leaflet';
+import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    iconRetinaUrl: iconRetina,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    tooltipAnchor: [16, -28],
-    shadowSize: [41, 41]
+  iconUrl: icon,
+  iconRetinaUrl: iconRetina,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
@@ -23,28 +23,53 @@ import * as XLSX from "xlsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-function MapView({ addComment, comments }) {
-  const [geoData, setGeoData] = useState(null);
+const projectTypeColors = {
+  Roadway: "#FF6B6B", // Coral Red
+  Transit: "#4ECDC4", // Teal
+  "Bike/Ped": "#45B7D1", // Sky Blue
+};
+
+function MapView({
+  addComment,
+  comments,
+  selectedProjectType,
+  geoData,
+  activeProjectLayers = [],
+}) {
+  const [filteredData, setFilteredData] = useState(null);
   const [bounds, setBounds] = useState(null);
 
   useEffect(() => {
-    fetch("/projects.geojson")
-      .then((res) => res.json())
-      .then((data) => {
-        setGeoData(data);
-        if (data && data.features && data.features.length > 0) {
-          const allCoords = data.features.map((f) => f.geometry.coordinates);
-          const minLat = Math.min(...allCoords.map((c) => c[1]));
-          const maxLat = Math.max(...allCoords.map((c) => c[1]));
-          const minLng = Math.min(...allCoords.map((c) => c[0]));
-          const maxLng = Math.max(...allCoords.map((c) => c[0]));
-          setBounds([
-            [minLat, minLng],
-            [maxLat, maxLng],
-          ]);
-        }
-      });
-  }, []);
+    if (geoData && geoData.features) {
+      // Filter features based on selectedProjectType and activeProjectLayers
+      const filtered = {
+        ...geoData,
+        features: geoData.features.filter((feature) => {
+          const matchesProjectType =
+            selectedProjectType === "All" ||
+            feature.properties.project_type === selectedProjectType;
+          const isLayerActive = activeProjectLayers.includes(
+            feature.properties.project_type
+          );
+          return matchesProjectType && isLayerActive;
+        }),
+      };
+
+      setFilteredData(filtered);
+
+      if (filtered.features.length > 0) {
+        const allCoords = filtered.features.map((f) => f.geometry.coordinates);
+        const minLat = Math.min(...allCoords.map((c) => c[1]));
+        const maxLat = Math.max(...allCoords.map((c) => c[1]));
+        const minLng = Math.min(...allCoords.map((c) => c[0]));
+        const maxLng = Math.max(...allCoords.map((c) => c[0]));
+        setBounds([
+          [minLat, minLng],
+          [maxLat, maxLng],
+        ]);
+      }
+    }
+  }, [geoData, selectedProjectType, activeProjectLayers]);
 
   const downloadAllProjectsData = () => {
     if (!geoData || !geoData.features || geoData.features.length === 0) {
@@ -90,8 +115,8 @@ function MapView({ addComment, comments }) {
       >
         Download All Projects
       </button>
-      {geoData &&
-        geoData.features.map((feature, i) => (
+      {filteredData &&
+        filteredData.features.map((feature, i) => (
           <Marker
             key={i}
             position={[
