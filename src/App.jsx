@@ -98,7 +98,6 @@ function App() {
           >
             OAHU Metropolitan Planning Organization
           </span>
-          <span style={{ marginRight: "20px" }}>Transportation...</span>
         </div>
       </header>
 
@@ -211,7 +210,7 @@ function App() {
                   width: "15px",
                   height: "15px",
                   borderRadius: "50%",
-                  background: "#45B7D1",
+                  background: "#ccd145ff",
                   marginRight: "5px",
                 }}
               ></span>
