@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
+import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    iconRetinaUrl: iconRetina,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    tooltipAnchor: [16, -28],
+    shadowSize: [41, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 import ProjectPopup from "./ProjectPopup";
 import * as XLSX from "xlsx";
 import { ToastContainer, toast } from "react-toastify";
