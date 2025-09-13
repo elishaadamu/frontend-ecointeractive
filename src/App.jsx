@@ -174,7 +174,7 @@ function App() {
                 },
               }}
             >
-              OAHU MPO
+              Tri cities area mpo tip/plan2050 projects
             </span>
           </Link>
         </div>
