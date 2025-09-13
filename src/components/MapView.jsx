@@ -124,31 +124,35 @@ function MapView({
       setPathData(paths);
 
       // Calculate bounds including both points and paths
-      const allPointCoords = filtered.features.map(
-        (f) => f.geometry.coordinates
-      );
-      const allPathCoords = paths.flatMap((path) => path.coordinates);
-      const allCoords = [
-        ...allPointCoords,
-        ...allPathCoords.map((coord) => [coord[1], coord[0]]),
-      ];
+      if (filtered.features.length > 0) {
+        const points = filtered.features.map((f) => [
+          f.geometry.coordinates[1],
+          f.geometry.coordinates[0],
+        ]);
 
-      if (allCoords.length > 0) {
-        const minLat = Math.min(
-          ...allCoords.map((c) => (Array.isArray(c[1]) ? c[1][0] : c[1]))
+        // Calculate the center of all points
+        const center = points.reduce(
+          (acc, curr) => [
+            acc[0] + curr[0] / points.length,
+            acc[1] + curr[1] / points.length,
+          ],
+          [0, 0]
         );
-        const maxLat = Math.max(
-          ...allCoords.map((c) => (Array.isArray(c[1]) ? c[1][0] : c[1]))
+
+        // Calculate the spread to add padding
+        const spread = points.reduce(
+          (acc, curr) => [
+            Math.max(acc[0], Math.abs(curr[0] - center[0])),
+            Math.max(acc[1], Math.abs(curr[1] - center[1])),
+          ],
+          [0, 0]
         );
-        const minLng = Math.min(
-          ...allCoords.map((c) => (Array.isArray(c[0]) ? c[0][0] : c[0]))
-        );
-        const maxLng = Math.max(
-          ...allCoords.map((c) => (Array.isArray(c[0]) ? c[0][0] : c[0]))
-        );
+
+        // Add padding to the bounds
+        const padding = 0.02; // Adjust this value to increase/decrease padding
         setBounds([
-          [minLat, minLng],
-          [maxLat, maxLng],
+          [center[0] - spread[0] - padding, center[1] - spread[1] - padding],
+          [center[0] + spread[0] + padding, center[1] + spread[1] + padding],
         ]);
       }
     }
@@ -176,7 +180,13 @@ function MapView({
   }
 
   return (
-    <MapContainer bounds={bounds} style={{ height: "100%", width: "100%" }}>
+    <MapContainer
+      bounds={bounds}
+      style={{ height: "100%", width: "100%" }}
+      zoom={12}
+      maxZoom={18}
+      minZoom={10}
+    >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
