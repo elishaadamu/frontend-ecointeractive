@@ -30,6 +30,11 @@ function App() {
     "Transit",
     "Bike/Ped",
   ]);
+  const [openPopupId, setOpenPopupId] = useState(null); // State to track which popup is open
+
+  const handleClosePopup = () => {
+    setOpenPopupId(null);
+  };
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -694,32 +699,6 @@ function App() {
                   },
                 }}
               >
-                <div
-                  style={{
-                    padding: "10px",
-                    borderBottom: "1px solid #e7e7e7",
-                    display: "flex",
-                    alignItems: "center",
-                    "@media (max-width: 768px)": {
-                      padding: "10px 45px 10px 10px",
-                    },
-                  }}
-                >
-                  <span style={{ marginRight: "10px", color: "#888" }}>🔍</span>{" "}
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    style={{
-                      flex: 1,
-                      padding: "8px",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                      "@media (max-width: 768px)": {
-                        fontSize: "14px",
-                      },
-                    }}
-                  />
-                </div>
                 <div style={{ flex: 1 }}>
                   <MapView
                     addComment={addComment}

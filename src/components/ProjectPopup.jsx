@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CommentForm from "./CommentForm";
 import * as XLSX from "xlsx";
 
-function ProjectPopup({ project, addComment, comments }) {
+function ProjectPopup({ project, addComment, comments, onClosePopup }) {
   const [showForm, setShowForm] = useState(false);
 
   return (
@@ -41,7 +41,11 @@ function ProjectPopup({ project, addComment, comments }) {
 
       {showForm && (
         <div className="comment-form-container">
-          <CommentForm projectId={project.project_id} addComment={addComment} />
+          <CommentForm
+            projectId={project.project_id}
+            addComment={addComment}
+            onClosePopup={onClosePopup}
+          />
         </div>
       )}
     </div>

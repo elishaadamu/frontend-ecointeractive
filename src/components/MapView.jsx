@@ -94,6 +94,7 @@ function MapView({
   selectedFundingLayer,
   selectedYearProgrammed,
   isAdmin, // Added isAdmin prop
+  onClosePopup, // New prop
 }) {
   const [filteredData, setFilteredData] = useState(null);
   const [bounds, setBounds] = useState(null);
@@ -266,6 +267,7 @@ function MapView({
                   project={feature.properties}
                   addComment={addComment}
                   comments={comments}
+                  onClosePopup={onClosePopup}
                 />
               </Popup>
             </Marker>

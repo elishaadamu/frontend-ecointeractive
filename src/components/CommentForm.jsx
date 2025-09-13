@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 
-function CommentForm({ projectId, addComment }) {
+function CommentForm({ projectId, addComment, onClosePopup }) {
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,6 +21,7 @@ function CommentForm({ projectId, addComment }) {
       await addComment(newComment);
       setName("");
       setComment("");
+      onClosePopup(); // Close the popup after successful submission
     } catch (error) {
       console.error("Error submitting comment:", error);
     } finally {
