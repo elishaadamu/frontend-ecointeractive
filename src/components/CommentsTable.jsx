@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import axios from "axios";
+import Swal from 'sweetalert2';
 
-const CommentsTable = ({ comments }) => {
+const CommentsTable = ({ comments, setComments }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -36,6 +38,37 @@ const CommentsTable = ({ comments }) => {
     exportToCsv([comment], `comment_${comment.id || new Date().getTime()}.csv`);
   };
 
+  const handleDeleteAllComments = async () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete all!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete("https://ecointeractive.onrender.com/api/comments");
+          setComments([]); // Clear comments in state
+          Swal.fire(
+            'Deleted!',
+            'All comments have been deleted.',
+            'success'
+          );
+        } catch (error) {
+          console.error("Failed to delete all comments:", error);
+          Swal.fire(
+            'Error!',
+            'Failed to delete comments.',
+            'error'
+          );
+        }
+      }
+    });
+  };
+
   const totalPages = Math.ceil(comments.length / itemsPerPage);
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -47,20 +80,35 @@ const CommentsTable = ({ comments }) => {
   return (
     <div style={{ padding: "20px" }}>
       <h2>Comments</h2>
-      <button
-        onClick={handleExportAll}
-        style={{
-          marginBottom: "20px",
-          padding: "10px 15px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Export All Comments
-      </button>
+      <div style={{ marginBottom: "20px" }}>
+        <button
+          onClick={handleExportAll}
+          style={{
+            padding: "10px 15px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            marginRight: "10px",
+          }}
+        >
+          Export All Comments
+        </button>
+        <button
+          onClick={handleDeleteAllComments}
+          style={{
+            padding: "10px 15px",
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Delete All Comments
+        </button>
+      </div>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>

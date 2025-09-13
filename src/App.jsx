@@ -62,6 +62,16 @@ function App() {
           ),
         ];
         setFundingSources(["All", ...sources.filter(Boolean)]); // filter out null/undefined
+
+        const yearsProgrammed = [
+          ...new Set(
+            data.features
+              .map((feature) => feature.properties.year)
+              .filter(Boolean) // Filter out null, undefined, 0, false, ""
+              .map(String)
+          ),
+        ].sort();
+        setYears(["All", ...yearsProgrammed]);
       })
       .catch((err) => console.error("Failed to fetch project data:", err));
   }, []);
@@ -75,11 +85,18 @@ function App() {
       console.log("Comment added:", response);
       setComments([...comments, response.data]);
       Swal.fire({
-        icon: 'success',
-        title: 'Comment Added!',
-        text: 'Your comment has been successfully submitted.',
+        icon: "success",
+        title: "Comment Added!",
+        text: "Your comment has been successfully submitted.",
         timer: 1500,
-        showConfirmButton: false
+        showConfirmButton: false,
+      });
+      Swal.fire({
+        icon: "success",
+        title: "Comment Added!",
+        text: "Your comment has been successfully submitted.",
+        timer: 1500,
+        showConfirmButton: false,
       });
     } catch (err) {
       console.error("Failed to add comment:", err);
@@ -109,10 +126,34 @@ function App() {
     navigate("/");
   };
 
-  const years = ["All"];
-  for (let i = 2015; i <= 2025; i++) {
-    years.push(String(i));
-  }
+  const [years, setYears] = useState([]);
+
+  const filteredGeoData = geoData
+    ? {
+        ...geoData,
+        features: geoData.features.filter((feature) => {
+          const matchesProjectType =
+            selectedProjectType === "All" ||
+            feature.properties.project_type === selectedProjectType;
+          const matchesYearProgrammed =
+            selectedYearProgrammed === "All" ||
+            String(feature.properties.year) === selectedYearProgrammed;
+          const matchesFundingSource =
+            selectedFundingSource === "All" ||
+            feature.properties.product === selectedFundingSource;
+          const matchesFundingLayer =
+            selectedFundingLayer === "All" ||
+            feature.properties.product === selectedFundingLayer;
+
+          return (
+            matchesProjectType &&
+            matchesYearProgrammed &&
+            matchesFundingSource &&
+            matchesFundingLayer
+          );
+        }),
+      }
+    : null;
 
   return (
     <div
@@ -297,7 +338,7 @@ function App() {
           path="/comments"
           element={
             isAdmin ? (
-              <CommentsTable comments={comments} />
+              <CommentsTable comments={comments} setComments={setComments} />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -632,7 +673,7 @@ function App() {
                 {isAdmin && (
                   <div>
                     <ProjectsTableIndex
-                      geoData={geoData}
+                      geoData={filteredGeoData}
                       selectedProjectType={selectedProjectType}
                       selectedYearProgrammed={selectedYearProgrammed}
                       selectedFundingSource={selectedFundingSource}
@@ -684,7 +725,7 @@ function App() {
                     addComment={addComment}
                     comments={comments}
                     selectedProjectType={selectedProjectType}
-                    geoData={geoData}
+                    geoData={filteredGeoData}
                     activeProjectLayers={activeProjectLayers}
                     selectedYearProgrammed={selectedYearProgrammed}
                     selectedFundingSource={selectedFundingSource}
