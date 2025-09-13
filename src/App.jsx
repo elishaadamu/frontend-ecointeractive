@@ -14,6 +14,7 @@ function App() {
   const [selectedProjectType, setSelectedProjectType] = useState("All");
   const [selectedYearProgrammed, setSelectedYearProgrammed] = useState("All");
   const [selectedFundingSource, setSelectedFundingSource] = useState("All");
+  const [selectedFundingLayer, setSelectedFundingLayer] = useState("All");
   const [fundingSources, setFundingSources] = useState([]);
   const [geoData, setGeoData] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -369,7 +370,7 @@ function App() {
                     },
                   }}
                 >
-                  Project Layers
+                  Funding Sources
                 </h3>
                 <div
                   style={{
@@ -381,131 +382,64 @@ function App() {
                     },
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={activeProjectLayers.includes("Roadway")}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setActiveProjectLayers([
-                            ...activeProjectLayers,
-                            "Roadway",
-                          ]);
-                        } else {
-                          setActiveProjectLayers(
-                            activeProjectLayers.filter(
-                              (layer) => layer !== "Roadway"
-                            )
-                          );
+                  <div style={{ marginBottom: "15px" }}>
+                    <div
+                      key="all"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                        fontSize: "0.9em",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        id="all-funding"
+                        name="funding-source"
+                        value="All"
+                        checked={selectedFundingLayer === "All"}
+                        onChange={(e) =>
+                          setSelectedFundingLayer(e.target.value)
                         }
-                      }}
-                      style={{
-                        marginRight: "10px",
-                        width: "20px",
-                        height: "20px",
-                      }}
-                    />
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "15px",
-                        height: "15px",
-                        borderRadius: "50%",
-                        background: "#FF6B6B",
-                        marginRight: "5px",
-                      }}
-                    ></span>
-                    Roadway
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={activeProjectLayers.includes("Transit")}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setActiveProjectLayers([
-                            ...activeProjectLayers,
-                            "Transit",
-                          ]);
-                        } else {
-                          setActiveProjectLayers(
-                            activeProjectLayers.filter(
-                              (layer) => layer !== "Transit"
-                            )
-                          );
-                        }
-                      }}
-                      style={{
-                        marginRight: "10px",
-                        width: "20px",
-                        height: "20px",
-                      }}
-                    />
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "15px",
-                        height: "15px",
-                        borderRadius: "50%",
-                        background: "#4ECDC4",
-                        marginRight: "5px",
-                      }}
-                    ></span>
-                    Transit
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={activeProjectLayers.includes("Bike/Ped")}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setActiveProjectLayers([
-                            ...activeProjectLayers,
-                            "Bike/Ped",
-                          ]);
-                        } else {
-                          setActiveProjectLayers(
-                            activeProjectLayers.filter(
-                              (layer) => layer !== "Bike/Ped"
-                            )
-                          );
-                        }
-                      }}
-                      style={{
-                        marginRight: "10px",
-                        width: "20px",
-                        height: "20px",
-                      }}
-                    />
-                    <span
-                      style={{
-                        display: "inline-block",
-                        width: "15px",
-                        height: "15px",
-                        borderRadius: "50%",
-                        background: "#ccd145ff",
-                        marginRight: "5px",
-                      }}
-                    ></span>
-                    Bike/Ped
+                        style={{
+                          marginRight: "10px",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      />
+                      <label htmlFor="all-funding">All</label>
+                    </div>
+                    {fundingSources
+                      .filter((source) => source !== "All")
+                      .map((source) => (
+                        <div
+                          key={source}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginBottom: "10px",
+                            fontSize: "0.9em",
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            id={`funding-${source}`}
+                            name="funding-source"
+                            value={source}
+                            checked={selectedFundingLayer === source}
+                            onChange={(e) =>
+                              setSelectedFundingLayer(e.target.value)
+                            }
+                            style={{
+                              marginRight: "10px",
+                              width: "20px",
+                              height: "20px",
+                            }}
+                          />
+
+                          <label htmlFor={`funding-${source}`}>{source}</label>
+                        </div>
+                      ))}
                   </div>
                 </div>
 
@@ -731,6 +665,7 @@ function App() {
                     activeProjectLayers={activeProjectLayers}
                     selectedYearProgrammed={selectedYearProgrammed}
                     selectedFundingSource={selectedFundingSource}
+                    selectedFundingLayer={selectedFundingLayer}
                     isAdmin={isAdmin} // Pass isAdmin prop
                   />
                 </div>

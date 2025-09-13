@@ -91,6 +91,7 @@ function MapView({
   geoData,
   activeProjectLayers = [],
   selectedFundingSource,
+  selectedFundingLayer,
   selectedYearProgrammed,
   isAdmin, // Added isAdmin prop
 }) {
@@ -113,8 +114,16 @@ function MapView({
           const matchesFundingSource =
             selectedFundingSource === "All" ||
             feature.properties.product === selectedFundingSource;
+          const matchesFundingLayer =
+            selectedFundingLayer === "All" ||
+            feature.properties.product === selectedFundingLayer;
 
-          return matchesProjectType && isLayerActive && matchesFundingSource;
+          return (
+            matchesProjectType &&
+            isLayerActive &&
+            matchesFundingSource &&
+            matchesFundingLayer
+          );
         }),
       };
 
@@ -163,7 +172,14 @@ function MapView({
         ]);
       }
     }
-  }, [geoData, selectedProjectType, activeProjectLayers, selectedFundingSource, selectedYearProgrammed]);
+  }, [
+    geoData,
+    selectedProjectType,
+    activeProjectLayers,
+    selectedFundingSource,
+    selectedFundingLayer,
+    selectedYearProgrammed,
+  ]);
 
   const downloadAllProjectsData = () => {
     if (!geoData || !geoData.features || geoData.features.length === 0) {
