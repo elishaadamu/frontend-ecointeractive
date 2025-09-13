@@ -5,15 +5,6 @@ import * as XLSX from "xlsx";
 function ProjectPopup({ project, addComment, comments }) {
   const [showForm, setShowForm] = useState(false);
 
-  const downloadProjectData = () => {
-    const dataToDownload = [{ ...project }];
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToDownload);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "ProjectData");
-    XLSX.writeFile(workbook, `project_${project.project_id}_data.xlsx`);
-  };
-
   return (
     <div
       className="project-popup"
@@ -46,7 +37,6 @@ function ProjectPopup({ project, addComment, comments }) {
         <button onClick={() => setShowForm(!showForm)}>
           {showForm ? "Close" : "Add Comment"}
         </button>
-        <button onClick={downloadProjectData}>Download Project Data</button>
       </div>
 
       {showForm && (

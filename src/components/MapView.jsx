@@ -92,6 +92,7 @@ function MapView({
   activeProjectLayers = [],
   selectedFundingSource,
   selectedYearProgrammed,
+  isAdmin, // Added isAdmin prop
 }) {
   const [filteredData, setFilteredData] = useState(null);
   const [bounds, setBounds] = useState(null);
@@ -197,23 +198,25 @@ function MapView({
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
-      <button
-        onClick={downloadAllProjectsData}
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          zIndex: 1000,
-          padding: "8px 12px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Download All Projects
-      </button>
+      {isAdmin && ( // Conditionally render for admin
+        <button
+          onClick={downloadAllProjectsData}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            zIndex: 1000,
+            padding: "8px 12px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Download All Projects
+        </button>
+      )}
       {/* Render Polylines for paths */}
       {pathData.map((path, i) => (
         <Polyline
