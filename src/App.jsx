@@ -7,6 +7,7 @@ function App() {
   const [selectedProjectType, setSelectedProjectType] = useState("All");
   const [selectedYearProgrammed, setSelectedYearProgrammed] = useState("All");
   const [selectedFundingSource, setSelectedFundingSource] = useState("All");
+  const [fundingSources, setFundingSources] = useState([]);
   const [geoData, setGeoData] = useState(null);
   const [activeProjectLayers, setActiveProjectLayers] = useState([
     "Roadway",
@@ -30,8 +31,15 @@ function App() {
           ),
         ];
         setProjectTypes(["All", ...types]);
+
+        const sources = [
+          ...new Set(
+            data.features.map((feature) => feature.properties.product)
+          ),
+        ];
+        setFundingSources(["All", ...sources.filter(Boolean)]); // filter out null/undefined
       })
-      .catch((err) => console.error("Failed to fetch project types:", err));
+      .catch((err) => console.error("Failed to fetch project data:", err));
   }, []);
 
   const addComment = (comment) => {
@@ -65,8 +73,6 @@ function App() {
   for (let i = 2015; i <= 2025; i++) {
     years.push(String(i));
   }
-
-  const fundingSources = ["All", "Federal", "Local"];
 
   return (
     <div

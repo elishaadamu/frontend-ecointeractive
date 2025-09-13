@@ -39,7 +39,7 @@ const projectTypeColors = {
 const createCustomIcon = (color) => {
   return L.divIcon({
     className: "custom-div-icon",
-    html: `<div style="background-color: ${color}; width: 15px; height: 15px; border-radius: 50%; border: 1px solid #000;"></div>`,
+    html: `<div style=\"background-color: ${color}; width: 15px; height: 15px; border-radius: 50%; border: 1px solid #000;\"></div>`,
     iconSize: [20, 20],
     iconAnchor: [10, 10],
     popupAnchor: [0, -10],
@@ -90,6 +90,8 @@ function MapView({
   selectedProjectType,
   geoData,
   activeProjectLayers = [],
+  selectedFundingSource,
+  selectedYearProgrammed,
 }) {
   const [filteredData, setFilteredData] = useState(null);
   const [bounds, setBounds] = useState(null);
@@ -107,7 +109,11 @@ function MapView({
           const isLayerActive = activeProjectLayers.includes(
             feature.properties.project_type
           );
-          return matchesProjectType && isLayerActive;
+          const matchesFundingSource =
+            selectedFundingSource === "All" ||
+            feature.properties.product === selectedFundingSource;
+
+          return matchesProjectType && isLayerActive && matchesFundingSource;
         }),
       };
 
@@ -156,7 +162,7 @@ function MapView({
         ]);
       }
     }
-  }, [geoData, selectedProjectType, activeProjectLayers]);
+  }, [geoData, selectedProjectType, activeProjectLayers, selectedFundingSource, selectedYearProgrammed]);
 
   const downloadAllProjectsData = () => {
     if (!geoData || !geoData.features || geoData.features.length === 0) {
