@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
 import { Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
 import MapView from "./components/MapView";
 import AdminLogin from "./components/AdminLogin";
@@ -8,7 +10,9 @@ import ProjectsTableIndex from "./components/ProjectsTableIndex";
 
 function App() {
   const [comments, setComments] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false); // New state for admin status
+  const [isAdmin, setIsAdmin] = useState(
+    localStorage.getItem("isAdmin") === "true"
+  ); // New state for admin status
   const navigate = useNavigate(); // For redirection after login
   const [projectTypes, setProjectTypes] = useState([]);
   const [selectedProjectType, setSelectedProjectType] = useState("All");
@@ -28,10 +32,18 @@ function App() {
   ]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/comments")
-      .then((res) => res.json())
-      .then((data) => setComments(data))
-      .catch((err) => console.error("Failed to fetch comments:", err));
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(
+          "https://ecointeractive.onrender.com/api/comments"
+        );
+        setComments(response.data);
+        console.log("Fetched comments:", response.data);
+      } catch (err) {
+        console.error("Failed to fetch comments:", err);
+      }
+    };
+    fetchComments();
 
     fetch(`${window.location.origin}/projects.geojson`)
       .then((res) => res.json())
@@ -54,19 +66,29 @@ function App() {
       .catch((err) => console.error("Failed to fetch project data:", err));
   }, []);
 
-  const addComment = (comment) => {
-    fetch("http://localhost:3001/api/comments", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(comment),
-    })
-      .then((res) => res.json())
-      .then((newComment) => {
-        setComments([...comments, newComment]);
-      })
-      .catch((err) => console.error("Failed to add comment:", err));
+  const addComment = async (comment) => {
+    try {
+      const response = await axios.post(
+        "https://ecointeractive.onrender.com/api/comments",
+        comment
+      );
+      console.log("Comment added:", response);
+      setComments([...comments, response.data]);
+      Swal.fire({
+        icon: 'success',
+        title: 'Comment Added!',
+        text: 'Your comment has been successfully submitted.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error("Failed to add comment:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Submission Failed",
+        text: "There was an error submitting your comment. Please try again.",
+      });
+    }
   };
 
   const handleProjectTypeChange = (event) => {
@@ -83,6 +105,7 @@ function App() {
 
   const handleLogout = () => {
     setIsAdmin(false);
+    localStorage.removeItem("isAdmin");
     navigate("/");
   };
 

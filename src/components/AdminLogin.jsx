@@ -4,14 +4,39 @@ import axios from "axios";
 const AdminLogin = ({ setIsAdmin, navigate }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Simulate a successful login for testing purposes
-    setIsAdmin(true);
-    navigate("/"); // Redirect to comments page after successful login
-    // You can add a toast notification here if you want to confirm fake login
-    // toast.success('Fake login successful!');
+    setErrorMessage(""); // Clear previous errors
+    setLoading(true); // Set loading to true
+    try {
+      const response = await axios.post(
+        "https://ecointeractive.onrender.com/api/login",
+        {
+          email,
+          password,
+        }
+      );
+      if (response.data.message === "Login successful!") {
+        setIsAdmin(true);
+        localStorage.setItem('isAdmin', 'true');
+        navigate("/");
+      } else {
+        setErrorMessage(
+          response.data.error || "Login failed. Please check your credentials."
+        );
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrorMessage(
+        "Login failed. Please check your credentials and try again."
+      );
+    } finally {
+      setLoading(false); // Set loading to false regardless of success or failure
+    }
   };
 
   return (
@@ -76,21 +101,51 @@ const AdminLogin = ({ setIsAdmin, navigate }) => {
             >
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-              }}
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "-8px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#555",
+                }}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
           </div>
+          {errorMessage && (
+            <div
+              style={{
+                color: "red",
+                marginBottom: "16px",
+                textAlign: "center",
+              }}
+            >
+              {errorMessage}
+            </div>
+          )}
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: "100%",
               padding: "12px",
@@ -100,9 +155,10 @@ const AdminLogin = ({ setIsAdmin, navigate }) => {
               color: "white",
               fontSize: "16px",
               cursor: "pointer",
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            Login & Download Comments
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

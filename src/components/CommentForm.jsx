@@ -4,9 +4,11 @@ import Swal from "sweetalert2";
 function CommentForm({ projectId, addComment }) {
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const newComment = {
       projectId,
@@ -15,18 +17,15 @@ function CommentForm({ projectId, addComment }) {
       timestamp: new Date().toISOString(),
     };
 
-    addComment(newComment);
-
-    await Swal.fire({
-      icon: "success",
-      title: "Comment Submitted!",
-      text: "Your comment has been successfully added.",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-
-    setName("");
-    setComment("");
+    try {
+      await addComment(newComment);
+      setName("");
+      setComment("");
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +47,7 @@ function CommentForm({ projectId, addComment }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          disabled={loading}
           style={{
             width: "100%",
             padding: "10px",
@@ -64,6 +64,7 @@ function CommentForm({ projectId, addComment }) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           required
+          disabled={loading}
           style={{
             width: "100%",
             padding: "5px",
@@ -77,6 +78,7 @@ function CommentForm({ projectId, addComment }) {
       </div>
       <button
         type="submit"
+        disabled={loading}
         style={{
           padding: "10px 20px",
           backgroundColor: "#007bff",
@@ -85,9 +87,10 @@ function CommentForm({ projectId, addComment }) {
           borderRadius: "4px",
           cursor: "pointer",
           fontSize: "14px",
+          opacity: loading ? 0.7 : 1,
         }}
       >
-        Submit Comment
+        {loading ? "Submitting..." : "Submit Comment"}
       </button>
     </form>
   );
