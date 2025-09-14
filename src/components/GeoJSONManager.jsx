@@ -1,80 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Swal from 'sweetalert2';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+import "./GeoJSONManager.css"; // import styles
 
-function GeoJSONManager({ setGeoData, currentGeoDataFilename, setCurrentGeoDataFilename }) {
+function GeoJSONManager({
+  setGeoData,
+  currentGeoDataFilename,
+  setCurrentGeoDataFilename,
+}) {
   const [availableGeoJSONs, setAvailableGeoJSONs] = useState([]);
-  const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFile, setSelectedFile] = useState("");
+  const [fileToUpload, setFileToUpload] = useState(null);
+
+  const fetchAvailableGeoJSONs = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        "https://ecointeractive.onrender.com/api/geojson/list"
+      );
+      setAvailableGeoJSONs(response.data);
+    } catch (error) {
+      Swal.fire("Error", "Failed to load available GeoJSON files.", "error");
+    }
+  }, []);
 
   useEffect(() => {
-    // Fetch list of available GeoJSON files from the backend
-    const fetchAvailableGeoJSONs = async () => {
+    const fetchInitialGeoJSONData = async () => {
       try {
-        const response = await axios.get('https://ecointeractive.onrender.com/api/geojson/list'); // Replace with your backend URL
-        setAvailableGeoJSONs(response.data);
-        // If there's no current active file set, or if the current active file isn't in the list,
-        // try to set the first one as selected, or default to 'projects.geojson' if available.
-        if (!currentGeoDataFilename && response.data.length > 0) {
-          const defaultFile = response.data.includes('projects.geojson') ? 'projects.geojson' : response.data[0];
-          setSelectedFile(defaultFile);
-        } else if (currentGeoDataFilename) {
-          setSelectedFile(currentGeoDataFilename);
-        }
+        const response = await axios.get(
+          "https://ecointeractive.onrender.com/api/geojson/active"
+        );
+        setGeoData(response.data.geojsonData);
+        setCurrentGeoDataFilename(response.data.filename);
+        setSelectedFile(response.data.filename);
       } catch (error) {
-        console.error('Error fetching available GeoJSON files:', error);
-        Swal.fire('Error', 'Failed to load available GeoJSON files.', 'error');
+        Swal.fire("Error", "Failed to load initial GeoJSON data.", "error");
       }
     };
 
+    fetchInitialGeoJSONData();
     fetchAvailableGeoJSONs();
-  }, [currentGeoDataFilename]);
+  }, [setGeoData, setCurrentGeoDataFilename, fetchAvailableGeoJSONs]);
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.value);
-  };
+  const handleFileChange = (e) => setSelectedFile(e.target.value);
 
   const handleSetActiveGeoJSON = async () => {
     if (!selectedFile) {
-      Swal.fire('Warning', 'Please select a GeoJSON file.', 'warning');
+      Swal.fire("Warning", "Please select a GeoJSON file.", "warning");
       return;
     }
 
     try {
-      // Call backend to set the active GeoJSON file
-      await axios.post('https://ecointeractive.onrender.com/api/geojson/set-active', { filename: selectedFile }); // Replace with your backend URL
+      await axios.post(
+        "https://ecointeractive.onrender.com/api/geojson/set-active",
+        {
+          filename: selectedFile,
+        }
+      );
 
-      // Fetch the content of the newly active GeoJSON file and update parent state
-      const response = await axios.get(`https://ecointeractive.onrender.com/api/geojson/${selectedFile}`); // Replace with your backend URL
-      setGeoData(response.data);
-      setCurrentGeoDataFilename(selectedFile); // Update the filename in parent state
+      const response = await axios.get(
+        "https://ecointeractive.onrender.com/api/geojson/active"
+      );
+      setGeoData(response.data.geojsonData);
+      setCurrentGeoDataFilename(response.data.filename);
 
-      Swal.fire('Success', `${selectedFile} is now the active GeoJSON file!`, 'success');
+      Swal.fire(
+        "Success",
+        `${selectedFile} is now the active GeoJSON file!`,
+        "success"
+      );
     } catch (error) {
-      console.error('Error setting active GeoJSON:', error);
-      Swal.fire('Error', 'Failed to set active GeoJSON file.', 'error');
+      Swal.fire("Error", "Failed to set active GeoJSON file.", "error");
     }
   };
 
-  return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto' }}>
-      <h2>Manage GeoJSON Projects</h2>
-      <p>Select a GeoJSON file to make it the active project data for all users.</p>
+  const handleFileChangeForUpload = (e) => setFileToUpload(e.target.files[0]);
 
-      <div style={{ marginBottom: '20px' }}>
-        <label htmlFor="geojson-select" style={{ display: 'block', marginBottom: '5px' }}>
-          Available GeoJSON Files:
-        </label>
+  const handleFileUpload = async () => {
+    if (!fileToUpload) {
+      Swal.fire("Warning", "Please select a file to upload.", "warning");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("geojson", fileToUpload);
+
+    try {
+      await axios.post(
+        "https://ecointeractive.onrender.com/api/geojson/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      Swal.fire(
+        "Success",
+        `${fileToUpload.name} uploaded successfully!`,
+        "success"
+      );
+      setFileToUpload(null);
+      fetchAvailableGeoJSONs();
+    } catch (error) {
+      Swal.fire("Error", "Failed to upload GeoJSON file.", "error");
+    }
+  };
+
+  const handleDeleteAllGeoJSONs = async () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will not be able to recover these files!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete all!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.delete(
+            "https://ecointeractive.onrender.com/api/geojson/delete-all"
+          );
+          Swal.fire(
+            "Deleted!",
+            "All GeoJSON files have been deleted.",
+            "success"
+          );
+          fetchAvailableGeoJSONs();
+          setGeoData(null);
+          setCurrentGeoDataFilename(null);
+          setSelectedFile("");
+        } catch (error) {
+          Swal.fire("Error", "Failed to delete GeoJSON files.", "error");
+        }
+      }
+    });
+  };
+
+  return (
+    <div className="geojson-manager">
+      {/* Set Active Section */}
+      <div className="card">
+        <h2>Manage GeoJSON Projects</h2>
+        <p>
+          Select a GeoJSON file to make it the active project data for all
+          users.
+        </p>
+
+        <label htmlFor="geojson-select">Available GeoJSON Files:</label>
         <select
           id="geojson-select"
           value={selectedFile}
           onChange={handleFileChange}
-          style={{
-            width: '100%',
-            padding: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            fontSize: '1em',
-          }}
+          className="select-input"
         >
           <option value="">-- Select a file --</option>
           {availableGeoJSONs.map((filename) => (
@@ -83,28 +160,59 @@ function GeoJSONManager({ setGeoData, currentGeoDataFilename, setCurrentGeoDataF
             </option>
           ))}
         </select>
+
+        <button className="btn btn-primary" onClick={handleSetActiveGeoJSON}>
+          Set as Active GeoJSON
+        </button>
+
+        {currentGeoDataFilename && (
+          <p className="active-file">
+            Currently Active: <strong>{currentGeoDataFilename}</strong>
+          </p>
+        )}
       </div>
 
-      <button
-        onClick={handleSetActiveGeoJSON}
-        style={{
-          padding: '10px 20px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '1em',
-        }}
-      >
-        Set as Active GeoJSON
-      </button>
+      {/* Upload Section */}
+      <div className="card">
+        <h2>Upload New GeoJSON File</h2>
+        <p>Select a GeoJSON file from your computer to upload to the server.</p>
 
-      {currentGeoDataFilename && (
-        <p style={{ marginTop: '20px', fontWeight: 'bold' }}>
-          Currently Active: {currentGeoDataFilename}
-        </p>
-      )}
+        <input
+          type="file"
+          accept=".geojson"
+          onChange={handleFileChangeForUpload}
+        />
+        <button className="btn btn-success" onClick={handleFileUpload}>
+          Upload GeoJSON
+        </button>
+      </div>
+
+      {/* List & Delete Section */}
+      <div className="card">
+        <h2>Manage Stored GeoJSON Files</h2>
+        {availableGeoJSONs.length > 0 ? (
+          <table className="file-table">
+            <thead>
+              <tr>
+                <th>Filename</th>
+              </tr>
+            </thead>
+            <tbody>
+              {availableGeoJSONs.map((filename) => (
+                <tr key={filename}>
+                  <td>{filename}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No GeoJSON files found.</p>
+        )}
+
+        <button className="btn btn-danger" onClick={handleDeleteAllGeoJSONs}>
+          Delete All GeoJSON Files
+        </button>
+      </div>
     </div>
   );
 }

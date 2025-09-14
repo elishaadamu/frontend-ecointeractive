@@ -98,7 +98,7 @@ function App() {
           .then((res) => res.json())
           .then((data) => {
             setGeoData(data);
-            setCurrentGeoDataFilename('projects.geojson');
+            setCurrentGeoDataFilename("projects.geojson");
             const types = [
               ...new Set(
                 data.features.map((feature) => feature.properties.project_type)
