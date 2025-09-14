@@ -7,6 +7,7 @@
   align-items: center;
   top: 0;
   z-index: 1000000;
+  position: relative; /* Added for correct positioning of absolute children */
 }
 
 .header-left {
@@ -117,8 +118,9 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 
-  .nav.open {
+    .nav.open {
     display: flex;
+    z-index: 1000001; /* Ensure it appears above other content */
   }
 
   .nav-link {
