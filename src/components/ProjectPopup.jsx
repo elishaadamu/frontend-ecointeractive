@@ -44,7 +44,10 @@ function ProjectPopup({ project, addComment, comments, onClosePopup }) {
           <CommentForm
             projectId={project.project_id}
             addComment={addComment}
-            onClosePopup={onClosePopup}
+            onClosePopup={() => {
+              onClosePopup(); // Call the original onClosePopup from parent
+              setShowForm(false); // Also hide the comment form section
+            }}
           />
         </div>
       )}

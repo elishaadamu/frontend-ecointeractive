@@ -21,6 +21,7 @@ function CommentForm({ projectId, addComment, onClosePopup }) {
       await addComment(newComment);
       setName("");
       setComment("");
+      console.log("Comment submitted successfully, calling onClosePopup");
       onClosePopup(); // Close the popup after successful submission
     } catch (error) {
       console.error("Error submitting comment:", error);

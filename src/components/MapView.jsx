@@ -93,12 +93,17 @@ function MapView({
   selectedFundingSource,
   selectedFundingLayer,
   selectedYearProgrammed,
+  selectedProjectTitle,
   isAdmin, // Added isAdmin prop
-  onClosePopup, // New prop
 }) {
   const [filteredData, setFilteredData] = useState(null);
+  const [openPopupId, setOpenPopupId] = useState(null); // New state to track open popup
   const [bounds, setBounds] = useState(null);
   const [pathData, setPathData] = useState([]);
+
+  const onClosePopup = () => {
+    setOpenPopupId(null);
+  };
 
   useEffect(() => {
     if (geoData && geoData.features) {
@@ -119,11 +124,18 @@ function MapView({
             selectedFundingLayer === "All" ||
             feature.properties.product === selectedFundingLayer;
 
+          const matchesProjectTitle =
+            selectedProjectTitle.length === 0 ||
+            selectedProjectTitle.some(
+              (selected) => selected.value === "All" || feature.properties.project_title === selected.value
+            );
+
           return (
             matchesProjectType &&
             isLayerActive &&
             matchesFundingSource &&
-            matchesFundingLayer
+            matchesFundingLayer &&
+            matchesProjectTitle
           );
         }),
       };
@@ -180,6 +192,7 @@ function MapView({
     selectedFundingSource,
     selectedFundingLayer,
     selectedYearProgrammed,
+    selectedProjectTitle,
   ]);
 
   const downloadAllProjectsData = () => {
@@ -215,7 +228,7 @@ function MapView({
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
-      {isAdmin && ( // Conditionally render for admin
+      {/* {isAdmin && ( // Conditionally render for admin
         <button
           onClick={downloadAllProjectsData}
           style={{
@@ -233,7 +246,7 @@ function MapView({
         >
           Download All Projects
         </button>
-      )}
+      )} */}
       {/* Render Polylines for paths */}
       {pathData.map((path, i) => (
         <Polyline
@@ -260,9 +273,15 @@ function MapView({
               ]}
               icon={DefaultIcon}
               zIndexOffset={1000} // Keep pointer on top
+              eventHandlers={{
+                click: () => {
+                  console.log("Marker clicked, opening popup for project_id:", feature.properties.project_id);
+                  setOpenPopupId(feature.properties.project_id);
+                },
+              }}
             >
               <Tooltip>Project ID: {feature.properties.project_id}</Tooltip>
-              <Popup>
+              <Popup onClose={onClosePopup}>
                 <ProjectPopup
                   project={feature.properties}
                   addComment={addComment}

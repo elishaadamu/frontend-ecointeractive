@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const ProjectsTable = ({ geoData }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const exportToCsv = (data, filename) => {
     if (!data || data.length === 0) {
@@ -84,7 +84,11 @@ const ProjectsTable = ({ geoData }) => {
       </div>
       <div style={{ overflowX: "auto" }}>
         <table
-          style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "14px",
+          }}
         >
           <thead>
             <tr style={{ backgroundColor: "#f2f2f2" }}>

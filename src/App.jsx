@@ -8,6 +8,8 @@ import CommentsTable from "./components/CommentsTable";
 import ProjectsTable from "./components/ProjectsTable";
 import ProjectsTableIndex from "./components/ProjectsTableIndex";
 import Header from "./components/Header";
+import { MultiSelect } from "react-multi-select-component";
+import "./components/FormElements.css";
 
 function App() {
   const [comments, setComments] = useState([]);
@@ -19,8 +21,10 @@ function App() {
   const [selectedProjectType, setSelectedProjectType] = useState("All");
   const [selectedYearProgrammed, setSelectedYearProgrammed] = useState("All");
   const [selectedFundingSource, setSelectedFundingSource] = useState("All");
+  const [selectedProjectTitle, setSelectedProjectTitle] = useState([]);
   const [selectedFundingLayer, setSelectedFundingLayer] = useState("All");
   const [fundingSources, setFundingSources] = useState([]);
+  const [projectTitle, setProjectTitle] = useState([]);
   const [geoData, setGeoData] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,11 +35,6 @@ function App() {
     "Transit",
     "Bike/Ped",
   ]);
-  const [openPopupId, setOpenPopupId] = useState(null); // State to track which popup is open
-
-  const handleClosePopup = () => {
-    setOpenPopupId(null);
-  };
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -61,6 +60,13 @@ function App() {
           ),
         ];
         setProjectTypes(["All", ...types]);
+
+        const titles = [
+          ...new Set(
+            data.features.map((feature) => feature.properties.project_title)
+          ),
+        ].map((title) => ({ label: title, value: title }));
+        setProjectTitle([...titles]);
 
         const sources = [
           ...new Set(
@@ -122,6 +128,10 @@ function App() {
     setSelectedYearProgrammed(event.target.value);
   };
 
+  const handleProjectTitleChange = (selectedOptions) => {
+    setSelectedProjectTitle(selectedOptions);
+  };
+
   const handleFundingSourceChange = (event) => {
     setSelectedFundingSource(event.target.value);
   };
@@ -151,11 +161,20 @@ function App() {
             selectedFundingLayer === "All" ||
             feature.properties.product === selectedFundingLayer;
 
+          const matchesProjectTitle =
+            selectedProjectTitle.length === 0 ||
+            selectedProjectTitle.some(
+              (selected) =>
+                selected.value === "All" ||
+                feature.properties.project_title === selected.value
+            );
+
           return (
             matchesProjectType &&
             matchesYearProgrammed &&
             matchesFundingSource &&
-            matchesFundingLayer
+            matchesFundingLayer &&
+            matchesProjectTitle
           );
         }),
       }
@@ -230,7 +249,6 @@ function App() {
               <aside
                 className="asidebar"
                 style={{
-                  width: "450px",
                   padding: "20px", // Keep padding
                   borderRight: "1px solid #e7e7e7",
                   overflowY: "auto",
@@ -295,7 +313,10 @@ function App() {
                     },
                   }}
                 >
-                  <div style={{ marginBottom: "15px" }}>
+                  <div
+                    style={{ marginBottom: "15px" }}
+                    className="funding-sources-container"
+                  >
                     <div
                       key="all"
                       style={{
@@ -394,6 +415,7 @@ function App() {
                   </h3>
                 </div>
                 <div
+                  className="filters-container"
                   style={{
                     marginBottom: "20px",
                     display: "flex",
@@ -404,6 +426,7 @@ function App() {
                       maxHeight: isFiltersOpen ? "1000px" : "0",
                       overflow: "hidden",
                       transition: "max-height 0.3s ease-in-out",
+                      display: "flex",
                     },
                   }}
                 >
@@ -430,9 +453,11 @@ function App() {
                     <select
                       style={{
                         width: "100%",
-                        padding: "8px",
+                        padding: "10px",
                         border: "1px solid #ccc",
                         borderRadius: "4px",
+                        fontSize: "0.9em",
+                        color: "#555",
                       }}
                       value={selectedProjectType}
                       onChange={handleProjectTypeChange}
@@ -462,29 +487,20 @@ function App() {
                         color: "#555",
                       }}
                     >
-                      Funding Source
+                      Project Name
                     </label>
-                    <select
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                      }}
-                      value={selectedFundingSource}
-                      onChange={handleFundingSourceChange}
-                    >
-                      {fundingSources.map((source) => (
-                        <option key={source} value={source}>
-                          {source}
-                        </option>
-                      ))}
-                    </select>
+                    <MultiSelect
+                      options={projectTitle}
+                      value={selectedProjectTitle}
+                      onChange={handleProjectTitleChange}
+                      labelledBy="Project Name"
+                    />
                   </div>
                   <div
                     style={{
                       width: "30%",
                       marginBottom: "10px",
+
                       "@media (max-width: 768px)": {
                         width: "100%",
                         marginBottom: "15px",
@@ -505,8 +521,11 @@ function App() {
                       style={{
                         width: "100%",
                         padding: "8px",
+                        padding: "10px",
                         border: "1px solid #ccc",
                         borderRadius: "4px",
+                        fontSize: "0.9em",
+                        color: "#555",
                       }}
                       value={selectedYearProgrammed}
                       onChange={handleYearProgrammedChange}
@@ -519,16 +538,16 @@ function App() {
                     </select>
                   </div>
                 </div>
-                {isAdmin && (
-                  <div>
-                    <ProjectsTableIndex
-                      geoData={filteredGeoData}
-                      selectedProjectType={selectedProjectType}
-                      selectedYearProgrammed={selectedYearProgrammed}
-                      selectedFundingSource={selectedFundingSource}
-                    />
-                  </div>
-                )}
+
+                <div>
+                  <ProjectsTableIndex
+                    geoData={filteredGeoData}
+                    selectedProjectType={selectedProjectType}
+                    selectedYearProgrammed={selectedYearProgrammed}
+                    selectedFundingSource={selectedFundingSource}
+                    selectedProjectTitle={selectedProjectTitle}
+                  />
+                </div>
               </aside>
 
               <main
@@ -554,6 +573,7 @@ function App() {
                     activeProjectLayers={activeProjectLayers}
                     selectedYearProgrammed={selectedYearProgrammed}
                     selectedFundingSource={selectedFundingSource}
+                    selectedProjectTitle={selectedProjectTitle}
                     selectedFundingLayer={selectedFundingLayer}
                     isAdmin={isAdmin} // Pass isAdmin prop
                   />
