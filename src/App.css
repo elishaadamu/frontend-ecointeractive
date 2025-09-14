@@ -170,11 +170,11 @@ button:hover {
 }
 
 .roadway-color {
-  background: #FF6B6B;
+  background: #ff6b6b;
 }
 
 .transit-color {
-  background: #4ECDC4;
+  background: #4ecdc4;
 }
 
 .bikeped-color {
@@ -300,5 +300,16 @@ button:hover {
 
   .search-input {
     padding: 6px;
+  }
+}
+@media screen and (max-width: 769px) {
+  .app-content_2 {
+    flex-direction: column !important;
+  }
+  .header-title {
+    display: none;
+  }
+  .asidebar {
+    max-height: 250px; /* Adjust as needed to show content */
   }
 }

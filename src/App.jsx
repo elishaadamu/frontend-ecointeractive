@@ -166,7 +166,7 @@ function App() {
       className="app-container"
       style={{ display: "flex", flexDirection: "column", height: "100vh" }}
     >
-            <Header
+      <Header
         isAdmin={isAdmin}
         handleLogout={handleLogout}
         isMobileMenuOpen={isMobileMenuOpen}
@@ -201,12 +201,16 @@ function App() {
         <Route
           path="/"
           element={
-            <div style={{ display: "flex", flex: 1, position: "relative" }}>
+            <div
+              className="app-content_2"
+              style={{ display: "flex", flex: 1, position: "relative" }}
+            >
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 style={{
                   display: "none",
                   "@media (max-width: 768px)": {
+                    // Apply styles only on mobile
                     display: "block",
                     position: "absolute",
                     top: "10px",
@@ -224,9 +228,10 @@ function App() {
                 {isSidebarOpen ? "✕" : "☰"}
               </button>
               <aside
+                className="asidebar"
                 style={{
                   width: "450px",
-                  padding: "20px",
+                  padding: "20px", // Keep padding
                   borderRight: "1px solid #e7e7e7",
                   overflowY: "auto",
                   background: "white",
@@ -235,7 +240,7 @@ function App() {
                     left: isSidebarOpen ? "0" : "-100%",
                     top: 0,
                     bottom: 0,
-                    width: "300px",
+                    width: "300px !important",
                     padding: "15px",
                     zIndex: 999,
                     transition: "left 0.3s ease",
@@ -393,7 +398,7 @@ function App() {
                     marginBottom: "20px",
                     display: "flex",
                     justifyContent: "space-between",
-                    flexWrap: "wrap",
+                    flexWrap: "wrap", // Keep flex wrap
                     "@media (max-width: 768px)": {
                       flexDirection: "column",
                       maxHeight: isFiltersOpen ? "1000px" : "0",
@@ -532,7 +537,9 @@ function App() {
                   display: "flex",
                   flexDirection: "column",
                   "@media (max-width: 768px)": {
-                    marginLeft: isSidebarOpen ? "300px" : 0,
+                    // Apply styles only on mobile
+                    marginLeft: isSidebarOpen ? "0px" : 0,
+                    zIndex: 0, // Ensure map is rendered under the sidebar
                     width: isSidebarOpen ? "calc(100% - 300px)" : "100%",
                     transition: "margin-left 0.3s ease, width 0.3s ease",
                   },
@@ -559,5 +566,4 @@ function App() {
     </div>
   );
 }
-
 export default App;

@@ -76,6 +76,7 @@ function Header({
             style={{ height: "40px", marginRight: "10px" }}
           />
           <span
+            className="header-title"
             style={{
               fontWeight: "bold",
               fontSize: "1.2em",
@@ -83,6 +84,7 @@ function Header({
               "@media (max-width: 768px)": {
                 fontSize: "1em",
                 marginRight: "10px",
+                display: "none", // Hide text on small screens
               },
             }}
           >
