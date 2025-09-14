@@ -337,8 +337,8 @@ function App() {
                         }
                         style={{
                           marginRight: "10px",
-                          width: "20px",
-                          height: "20px",
+                          width: "15px",
+                          height: "15px",
                         }}
                       />
                       <label htmlFor="all-funding">All</label>
@@ -366,8 +366,8 @@ function App() {
                             }
                             style={{
                               marginRight: "10px",
-                              width: "20px",
-                              height: "20px",
+                              width: "15px",
+                              height: "15px",
                             }}
                           />
 
