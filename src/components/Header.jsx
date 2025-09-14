@@ -23,7 +23,7 @@ function Header({
         <Link to="/" className="logo-link">
           <img src="/MPO_Logo.jpg" alt="Logo" className="logo" />
           <span className="header-title">
-            Tri-Cities Area MPO Tip/Plan2050 Projects
+            Tri-Cities Area MPO TIP/PLAN2050 Projects
           </span>
         </Link>
       </div>
