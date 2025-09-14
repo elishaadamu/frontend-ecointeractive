@@ -9,6 +9,7 @@ import ProjectsTable from "./components/ProjectsTable";
 import ProjectsTableIndex from "./components/ProjectsTableIndex";
 import Header from "./components/Header";
 import { MultiSelect } from "react-multi-select-component";
+import GeoJSONManager from "./components/GeoJSONManager";
 import "./components/FormElements.css";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
   const [fundingSources, setFundingSources] = useState([]);
   const [projectTitle, setProjectTitle] = useState([]);
   const [geoData, setGeoData] = useState(null);
+  const [currentGeoDataFilename, setCurrentGeoDataFilename] = useState(null); // New state for active GeoJSON filename
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLayersOpen, setIsLayersOpen] = useState(false);
@@ -50,10 +52,15 @@ function App() {
     };
     fetchComments();
 
-    fetch(`${window.location.origin}/projects.geojson`)
-      .then((res) => res.json())
-      .then((data) => {
-        setGeoData(data); // Set geoData here
+    const fetchActiveGeoJSON = async () => {
+      try {
+        const response = await axios.get(
+          "https://ecointeractive.onrender.com/api/geojson/active"
+        ); // Fetch active GeoJSON from backend
+        setGeoData(response.data.geojsonData);
+        setCurrentGeoDataFilename(response.data.filename);
+
+        const data = response.data.geojsonData;
         const types = [
           ...new Set(
             data.features.map((feature) => feature.properties.project_type)
@@ -84,8 +91,52 @@ function App() {
           ),
         ].sort();
         setYears(["All", ...yearsProgrammed]);
-      })
-      .catch((err) => console.error("Failed to fetch project data:", err));
+      } catch (err) {
+        console.error("Failed to fetch active GeoJSON data:", err);
+        // Fallback to local projects.geojson if backend fails or no active file is set
+        fetch(`${window.location.origin}/projects.geojson`)
+          .then((res) => res.json())
+          .then((data) => {
+            setGeoData(data);
+            setCurrentGeoDataFilename('projects.geojson');
+            const types = [
+              ...new Set(
+                data.features.map((feature) => feature.properties.project_type)
+              ),
+            ];
+            setProjectTypes(["All", ...types]);
+
+            const titles = [
+              ...new Set(
+                data.features.map((feature) => feature.properties.project_title)
+              ),
+            ].map((title) => ({ label: title, value: title }));
+            setProjectTitle([...titles]);
+
+            const sources = [
+              ...new Set(
+                data.features.map((feature) => feature.properties.product)
+              ),
+            ];
+            setFundingSources(["All", ...sources.filter(Boolean)]);
+
+            const yearsProgrammed = [
+              ...new Set(
+                data.features
+                  .map((feature) => feature.properties.year)
+                  .filter(Boolean)
+                  .map(String)
+              ),
+            ].sort();
+            setYears(["All", ...yearsProgrammed]);
+          })
+          .catch((fallbackErr) =>
+            console.error("Failed to fetch fallback project data:", fallbackErr)
+          );
+      }
+    };
+
+    fetchActiveGeoJSON();
   }, []);
 
   const addComment = async (comment) => {
@@ -212,6 +263,20 @@ function App() {
           element={
             isAdmin ? (
               <ProjectsTable geoData={geoData} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/geojson-manager"
+          element={
+            isAdmin ? (
+              <GeoJSONManager
+                setGeoData={setGeoData}
+                currentGeoDataFilename={currentGeoDataFilename}
+                setCurrentGeoDataFilename={setCurrentGeoDataFilename}
+              />
             ) : (
               <Navigate to="/login" replace />
             )

@@ -41,6 +41,9 @@ function Header({
             <Link to="/projects" className="nav-link">
               View Projects
             </Link>
+            <Link to="/geojson-manager" className="nav-link">
+              Manage GeoJSON
+            </Link>
           </>
         )}
 
